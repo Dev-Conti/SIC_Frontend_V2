@@ -1,0 +1,49 @@
+{
+    "ParceiroCorporativo": {
+      "Identificação": {
+        "Código": "",
+        "Razão Social ou Nome Abreviado": "",
+        "Nome Fantasia": "",
+        "Última Atualização": "",
+        "CNPJ": ""
+      },
+      "Contato": {
+        "Telefone Corporativo": "",
+        "E-mail Contato": "",
+        "Endereço": {
+          "Logradouro": "",
+          "Número": "",
+          "Complemento": "",
+          "Bairro": "",
+          "Cidade": "",
+          "Estado": "",
+          "CEP": ""
+        }
+      },
+      "Dados Bancários": {
+        "Código do Banco": "",
+        "Banco": "",
+        "Agência": "",
+        "Tipo de Conta": "",
+        "Conta": "",
+        "PIX": ""
+      },
+      "Contrato": {
+        "Método de Contratação": "",
+        "Entrada": "",
+        "Dia do Pagamento": "",
+        "Método de Recebimento": "",
+        "Grupo Todos Internos": "",
+        "Observações": ""
+      },
+      "Informações Adicionais": {
+        "Setor": "",
+        "Função": "",
+        "Supervisor Imediato": "",
+        "Crachá": "",
+        "Quantidade de Camisas": "",
+        "Cartão Virtual": ""
+      }
+    }
+  }
+  

@@ -1,0 +1,65 @@
+{
+    "ColaboradorExclusivo": {
+      "Informações Básicas": {
+        "Código": "",
+        "Nome": "",
+        "Última Atualização": "",
+        "Nome Completo": "",
+        "Idade": "",
+        "Sexo": "",
+        "Data de Nascimento": "",
+        "Pai": "",
+        "Mãe": ""
+      },
+      "Contato": {
+        "Telefone Pessoal": "",
+        "E-mail Pessoal": "",
+        "LinkedIn": "",
+        "Telefone Corporativo": "",
+        "E-mail ConTI": ""
+      },
+      "Endereço": {
+        "Logradouro": "",
+        "Número": "",
+        "Complemento": "",
+        "Bairro": "",
+        "Cidade": "",
+        "Estado": "",
+        "CEP": ""
+      },
+      "Documentos": {
+        "CPF": "",
+        "RG": "",
+        "CNPJ": ""
+      },
+      "Dados Bancários": {
+        "Código do Banco": "",
+        "Banco": "",
+        "Agência": "",
+        "Tipo de Conta": "",
+        "Conta": "",
+        "PIX": ""
+      },
+      "Informações de Contrato": {
+        "Método de Contratação": "",
+        "Entrada": "",
+        "Dia do Pagamento": "",
+        "Ausência Remunerada": "",
+        "Contrato": "",
+        "Método de Recebimento": "",
+        "Grupo Todos Internos": ""
+      },
+      "Cargo e Área": {
+        "Cargo": "",
+        "Área": "",
+        "Sistema": "",
+        "Supervisor Imediato": ""
+      },
+      "Identificação Corporativa": {
+        "Crachá": "",
+        "Quantidade de Camisas": "",
+        "Cartão Virtual": ""
+      }
+    }
+  }
+  

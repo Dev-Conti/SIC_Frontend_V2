@@ -1,0 +1,60 @@
+{
+    "ParceiroIndividual": {
+      "Identificação": {
+        "Código": "",
+        "Nome Abreviado ou Razão Social": "",
+        "Nome Fantasia ou Nome Completo": "",
+        "Última Atualização": "",
+        "Sexo": "",
+        "Data de Nascimento": ""
+      },
+      "Contato": {
+        "Telefone": "",
+        "E-mail Pessoal": "",
+        "LinkedIn": "",
+        "Telefone Corporativo": "",
+        "E-mail ConTI": ""
+      },
+      "Endereço": {
+        "Logradouro": "",
+        "Número": "",
+        "Complemento": "",
+        "Bairro": "",
+        "Cidade": "",
+        "Estado": "",
+        "CEP": ""
+      },
+      "Documentos": {
+        "CNPJ": "",
+        "CPF": "",
+        "RG": ""
+      },
+      "Dados Bancários": {
+        "Código do Banco": "",
+        "Banco": "",
+        "Agência": "",
+        "Tipo de Conta": "",
+        "Conta": "",
+        "PIX": ""
+      },
+      "Contrato": {
+        "Método de Contratação": "",
+        "Entrada": "",
+        "Dia do Pagamento": "",
+        "Ausência Remunerada": false,
+        "Método de Recebimento 1": "",
+        "Método de Recebimento 2": "",
+        "Observações": ""
+      },
+      "Informações Profissionais": {
+        "Cargo": "",
+        "Área": "",
+        "Sistema": "",
+        "Supervisor Imediato": "",
+        "Crachá": "",
+        "Quantidade de Camisas": "",
+        "Cartão Virtual": ""
+      }
+    }
+  }
+  

@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-bg: #48599E;
+  --sidebar-text: #ffffff;
+  --sidebar-border: #48599E;
+  --sidebar-hover-bg: #6b7dbb;
+}
+
+/* Estilizando as barras de rolagem */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-grayish-blue);
+  border-radius: 10px;
+  border: 2px solid var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-teal);
+}
+
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+

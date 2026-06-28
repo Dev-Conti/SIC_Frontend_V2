@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-midnight-blue: #06141B;
+  --color-dark-slate: #11212D;
+  --color-oceanic-blue: #253745;
+  --color-teal: #4A5C6A;
+  --color-grayish-blue: #9BA8AB;
+  --color-light-gray: #f9fafb;
+  --sidebar-bg: #374151;
+  --sidebar-text: #ffffff;
+  --sidebar-border: #9BA8AB;
+  --sidebar-hover-bg: #6b7dbb;
+}
+
+/* Estilizando as barras de rolagem */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-grayish-blue);
+  border-radius: 10px;
+  border: 2px solid var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-teal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  @apply font-sans;
+  color: var(--color-midnight-blue);
+  background: var(--color-light-gray);
+}
+
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Clear Sans';
+  src: url('/fonts/clear-sans/ClearSans-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
