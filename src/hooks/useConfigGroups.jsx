@@ -1,4 +1,4 @@
-const configGroups = [
+export const configGroups = [
     {
         base_route:'/comercial',
         group_id:'df5919f9-37fd-4725-9aab-8ecc154789a8',

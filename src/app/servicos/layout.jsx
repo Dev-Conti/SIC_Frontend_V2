@@ -3,7 +3,6 @@
 import Sidebar from "@/components/Layout/Sidebar";
 import { useState } from "react";
 import withAuth from "@/hoc/withAuth";
-import routePermissions from "@/data/routePermissions";
 import { NavbarDefault } from "@/components/Layout/NavbarDefault";
 import {
   FiHome,
@@ -15,6 +14,11 @@ import {
 import { GrProjects } from "react-icons/gr";
 import { GrTestDesktop } from "react-icons/gr";
 import { GrUserManager } from "react-icons/gr";
+import useConfigGroups from "@/hooks/useConfigGroups";
+import useMembers from "@/hooks/useMembers";
+import { useRouter } from "next/navigation";
+
+const baseRoute = "/servicos";
 
 function UserLayout({ children }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -23,7 +27,6 @@ function UserLayout({ children }) {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  const baseRoute = "/servicos"; // Define a rota base
   const sections = [
     {
       label: "página inicial",
@@ -96,4 +99,21 @@ function UserLayout({ children }) {
   );
 }
 
-export default withAuth(UserLayout, routePermissions);
+const withEmails = (Component) => (props) => {
+  const router = useRouter();
+  const config = useConfigGroups(baseRoute);
+  const { emails, members, loading, error } = useMembers(config.group_id, config.channel_id);
+
+  if (loading) {
+    return <p>Verificando Permissões...</p>;
+  }
+
+  if (error) {
+    router.push("/");
+    return null;
+  }
+
+  return <Component {...props} emails={emails} members={members} />;
+};
+
+export default withEmails(withAuth(UserLayout));

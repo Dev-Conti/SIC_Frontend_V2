@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
+import { configGroups } from "@/hooks/useConfigGroups";
 
 const AuthContext = createContext();
 
@@ -23,6 +24,26 @@ export const AuthProvider = ({ children }) => {
       setLoading(false); // Finaliza o carregamento
     }
   }, []);
+
+  const fetchFirstAccessibleRoute = async (userEmail, token) => {
+    const email = userEmail?.toLowerCase();
+    const results = await Promise.all(
+      configGroups.map(async ({ base_route, group_id, channel_id }) => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API_URL}/m365/channel_members?group_id=${group_id}&channel_id=${channel_id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const json = await res.json();
+          const emails = json.data.map(m => m.email?.toLowerCase());
+          return emails.includes(email) ? base_route : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    return results.find(r => r !== null) ?? "/unauthorized";
+  };
 
   const fetchUserData = async (token) => {
     try {
@@ -48,7 +69,8 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem("user_data", JSON.stringify(userData));
       setLoading(false);
-      router.push("/comercial/ganhos");
+      const destination = await fetchFirstAccessibleRoute(userData.mail || userData.userPrincipalName, token);
+      router.push(destination);
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error);
       setLoading(false);

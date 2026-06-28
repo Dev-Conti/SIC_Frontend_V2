@@ -16,9 +16,8 @@ export default function RedirectPage() {
     const token = urlParams.get("token"); // Token da API interna
 
     if (token) {
-      login(token); // Chama a função login com o token
+      login(token); // Chama a função login com o token — o redirect é feito pelo AuthContext
       setHasLoggedIn(true); // Marca como logado para evitar reexecução
-      router.replace("/comercial/ganhos"); // Usa replace para evitar que a URL com o token fique no histórico
     } else {
       router.replace("/login");
     }
