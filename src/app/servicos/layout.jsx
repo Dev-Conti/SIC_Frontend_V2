@@ -92,7 +92,7 @@ function UserLayout({ children, emails, members }) {
           sections={sections}
         />
         {/* Conteúdo Principal */}
-        <div className={`flex flex-col w-full transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"}`}>
+        <div className={`flex flex-col w-full min-w-0 transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"}`}>
           <NavbarDefault/>
           <div className="flex-1 p-4">
             {children}
