@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { FaEllipsisH } from 'react-icons/fa';
 import ModalNegociacao from '../ModalDetalhesWarmup/ModalDetalhesWarmup';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../Auth/AuthContext/AuthContext";
-import useGroupMembers from "../../hooks/useGroupMembers";
+import { useRouter } from 'next/navigation';
+import { useAuth } from "@/context/AuthContext";
+import useGroupMembers from "@/hooks/useGroupMembers";
+import useConfigGroups from "@/hooks/useConfigGroups";
 
 const WarmupProjetos = () => {
-    const { userData } = useAuth();
-    const USER_NAME = userData?.user?.displayName; // Obtém o nome do usuário logado
+    const { user } = useAuth();
+    const USER_NAME = user?.displayName;
     const [dadosWarmup, setDadosWarmup] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,27 +20,38 @@ const WarmupProjetos = () => {
     const [showVoltarModal, setShowVoltarModal] = useState(false);
     const [observacaoVoltar, setObservacaoVoltar] = useState("");
     const [currentItemVoltar, setCurrentItemVoltar] = useState(null);
-    const [filtroGerente, setFiltroGerente] = useState(true); // Estado do checkbox de filtro
-    const groupId = "df5919f9-37fd-4725-9aab-8ecc154789a8"; // ID do grupo
-    const channelId = '19:f826e90af9f741319cf021cf04aa19a4@thread.tacv2';
-    const { members } = useGroupMembers(groupId, channelId); // Para o grupo principal
+    const [filtroGerente, setFiltroGerente] = useState(true);
+    const config = useConfigGroups('/servicos');
+    const { members } = useGroupMembers(config?.group_id, config?.channel_id);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [currentAssignItem, setCurrentAssignItem] = useState(null);
     const [loadingAssign, setLoadingAssign] = useState(false);
 
-    const navigate = useNavigate();
-    const API_URL = process.env.REACT_APP_API_URL || 'https://sic-conti-backend.vercel.app';
+    const router = useRouter();
+    const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
-    const isGerente = (item) => item?.capa_projeto?.gerente_projeto?.nome === USER_NAME || USER_NAME === "TI";
     const hasGerente = (item) => !!item?.capa_projeto?.gerente_projeto?.nome;
-    const isSocioResponsavel = (item) => item?.capa_projeto?.socio_responsavel?.nome === USER_NAME || USER_NAME === "TI";
+    const isSocioResponsavel = (item) => item?.capa_projeto?.socio_responsavel?.nome === USER_NAME || USER_NAME === "TI" || USER_NAME ==="Desenvolvimento ConTI";
+
+    const getCamposObrigatoriosFaltantes = (item) => {
+        const cronograma = item?.cronograma_execucao || {};
+        const faltantes = [];
+        if (!cronograma.Parametrizar_agile?.trim()) {
+            faltantes.push('Parametrizar no Agile?');
+        }
+        if (cronograma.cronograma_fisico === 'Project' && !cronograma.caminho_project?.trim()) {
+            faltantes.push('Caminho para o arquivo do Project');
+        }
+        return faltantes;
+    };
 
     async function listarWarmup() {
         try {
-            const response = await fetch(`${API_URL}/api/listar_warmup?etapa=Warmup Projetos`, {
+            const response = await fetch(`${API_URL}/warmup/listar?etapa=Warmup Projetos`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
 
@@ -113,10 +125,11 @@ const WarmupProjetos = () => {
 
     const confirmarAvancarEtapa = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/warmup/alterar_etapa/${currentItem._id}`, {
-                method: 'PATCH',
+            const response = await fetch(`${API_URL}/warmup/atualizar/${currentItem.negocio_id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
                 body: JSON.stringify({
                     etapa: 'Warmup Financeiro',
@@ -130,7 +143,7 @@ const WarmupProjetos = () => {
 
             listarWarmup();
             alert('Etapa atualizada com sucesso!');
-            await enviarEmailNotificacaoFinanceiro(currentItem);
+            try { await enviarEmailNotificacaoFinanceiro(currentItem); } catch (e) { console.error("Erro ao enviar email:", e); } // TODO: implementar via v2 backend
         } catch (error) {
             alert(`Erro ao atualizar etapa: ${error.message}`);
         } finally {
@@ -180,19 +193,20 @@ const WarmupProjetos = () => {
 
     const confirmarVoltarEtapa = async () => {
         try {
-            const usuario = userData?.user?.displayName || "Usuário Anônimo"; // Obtém o nome do usuário
+            const usuario = user?.displayName || "Usuário Anônimo";
 
-            const response = await fetch(`${API_URL}/api/warmup/alterar_etapa/${currentItemVoltar._id}`, {
-                method: 'PATCH',
+            const response = await fetch(`${API_URL}/warmup/atualizar/${currentItemVoltar.negocio_id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
                 body: JSON.stringify({
                     etapa: 'Warmup Comercial',
                     status: "Revisar",
                     data: new Date().toLocaleString("pt-BR"),
                     observacao: observacaoVoltar,
-                    usuario: usuario, // Envia o nome do usuário logado
+                    usuario: usuario,
                 }),
             });
 
@@ -202,7 +216,7 @@ const WarmupProjetos = () => {
 
             listarWarmup();
             alert('Etapa atualizada com sucesso!');
-            await enviarEmailNotificacaoComercial(currentItemVoltar); // Envia email após a confirmação
+            try { await enviarEmailNotificacaoComercial(currentItemVoltar); } catch (e) { console.error("Erro ao enviar email:", e); } // TODO: implementar via v2 backend
         } catch (error) {
             alert(`Erro ao atualizar etapa: ${error.message}`);
         } finally {
@@ -252,9 +266,9 @@ const WarmupProjetos = () => {
         }
     };
 
-    const redirecionarFormulario = (id) => {
-        navigate(`/forms-warmup-projetos/${id}`);
-        setActiveMenu(null); // Fecha o menu ao redirecionar
+    const redirecionarFormulario = (item) => {
+        router.push(`/servicos/forms-warmup-projetos/${item.negocio_id}`);
+        setActiveMenu(null);
     };
 
     const handleAssignGerente = (item) => {
@@ -272,13 +286,14 @@ const WarmupProjetos = () => {
         console.log("Gerente selecionado:", gerente);
         console.log("Current Assign Item:", currentAssignItem.item);
         try {
-            const response = await fetch(`${API_URL}/api/warmup/alterar_gerente/${currentAssignItem.item._id}`, {
-                method: 'PATCH',
+            const response = await fetch(`${API_URL}/warmup/atualizar/${currentAssignItem.item.negocio_id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
                 body: JSON.stringify({
-                    gerente_projeto: gerente,
+                    "capa_projeto.gerente_projeto": gerente,
                 }),
             });
 
@@ -289,7 +304,7 @@ const WarmupProjetos = () => {
 
             listarWarmup();
             alert('Gerente atribuído com sucesso!');
-            await enviarEmailNotificacaoGerente(currentAssignItem.item, gerente);
+            try { await enviarEmailNotificacaoGerente(currentAssignItem.item, gerente); } catch (e) { console.error("Erro ao enviar email:", e); } // TODO: implementar via v2 backend
         } catch (error) {
             console.error("Erro ao atribuir gerente:", error.message);
             alert(`Erro ao atribuir gerente: ${error.message}`);
@@ -391,7 +406,14 @@ const WarmupProjetos = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map((item) => (
+                            {filteredData.map((item) => {
+                                const camposFaltantes = getCamposObrigatoriosFaltantes(item);
+                                const podeAvancarEtapa = hasGerente(item) && camposFaltantes.length === 0;
+                                const pendenciasAvancarEtapa = [
+                                    ...(!hasGerente(item) ? ['Atribuir um Gerente de Projeto'] : []),
+                                    ...camposFaltantes.map((c) => `Preencher "${c}"`),
+                                ];
+                                return (
                                 <tr key={item._id} className="hover:bg-gray-50">
                                     <td className="px-2 py-1 text-gray-700">{item?.capa_projeto?.socio_responsavel?.nome || "N/A"}</td>
                                     <td className="px-2 py-1 text-gray-700">{item?.capa_projeto?.gerente_projeto?.nome || "N/A"}</td>
@@ -438,23 +460,23 @@ const WarmupProjetos = () => {
                                                     Ver Detalhes
                                                 </button>
                                                 <button
-                                                    onClick={() => redirecionarFormulario(item._id)}
-                                                    className={`text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center ${!isGerente(item) || !hasGerente(item) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    disabled={!isGerente(item) || !hasGerente(item)}
+                                                    onClick={() => redirecionarFormulario(item)}
+                                                    className="text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center"
                                                 >
                                                     Abrir Formulário
                                                 </button>
                                                 <button
                                                     onClick={() => handleAvancarEtapa(item)}
-                                                    className={`text-sky-700 px-4 py-2 hover:bg-sky-100 w-full text-center ${!isGerente(item) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    disabled={!isGerente(item)}
+                                                    disabled={!podeAvancarEtapa}
+                                                    title={!podeAvancarEtapa ? `Pendências: ${pendenciasAvancarEtapa.join(', ')}` : undefined}
+                                                    className={`text-sky-700 px-4 py-2 hover:bg-sky-100 w-full text-center ${!podeAvancarEtapa ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 >
                                                     Avançar Etapa
                                                 </button>
                                                 <button
                                                     onClick={() => handleVoltarEtapa(item)}
-                                                    className={`text-amber-500 px-4 py-2 hover:bg-amber-50 w-full text-center ${!isGerente(item) && !isSocioResponsavel(item) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    disabled={!isGerente(item) && !isSocioResponsavel(item)}
+                                                    className={`text-amber-500 px-4 py-2 hover:bg-amber-50 w-full text-center ${!isSocioResponsavel(item) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    disabled={!isSocioResponsavel(item)}
                                                 >
                                                     Voltar Etapa
                                                 </button>
@@ -470,7 +492,8 @@ const WarmupProjetos = () => {
                                         )}
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -543,13 +566,13 @@ const WarmupProjetos = () => {
                             <select
                                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none"
                                 onChange={(e) => {
-                                    const selectedGerente = members.find(member => member.displayName === e.target.value);
+                                    const selectedGerente = (members || []).find(member => member.displayName === e.target.value);
                                     console.log("Gerente selecionado no modal:", selectedGerente);
                                     setCurrentAssignItem(prev => ({ ...prev, gerente: selectedGerente }));
                                 }}
                             >
                                 <option value="">Selecione</option>
-                                {members.map((member) => (
+                                {(members || []).map((member) => (
                                     <option key={member.id} value={member.displayName}>
                                         {member.displayName}
                                     </option>

@@ -1,11 +1,11 @@
 "use client";
 
-import { WarmupServicosTable } from "@/components/Tabelas/WarmupServicosTable";
+import WarmupProjetos from "@/components/Migrations/WarmupProjetos/WarmupProjetos";
 
-export default function Home() {
+export default function Page() {
   return (
-    <div className="flex justify-center m-2">
-      <WarmupServicosTable/>
+    <div className="flex flex-col p-4 min-h-screen w-full px-10">
+      <WarmupProjetos />
     </div>
   );
 }

@@ -1,16 +1,17 @@
+"use client";
+
 import React from "react";
-import { useAuth } from "../Auth/AuthContext/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { NumericFormat } from 'react-number-format';
-import ListaGerentesProjeto from "./Dados/ListaGerentesProjeto";
-import ObservacoesChat from "./Componentes/ObservacoesChat"
+import ObservacoesChat from "./Componentes/ObservacoesChat";
 import ListaSuspensa from "./inputs/ListaSuspensa";
 import CampoTexto from "./inputs/CampoTexto";
 import CampoTextoLongo from "./inputs/CampoTextoLongo";
 import CampoLink from "./inputs/CampoLink";
-import useGroupMembers from "../../hooks/useGroupMembers";
-import useRecursos from "../../hooks/useRecursos";
+import useGroupMembers from "@/hooks/useGroupMembers";
+import { useDataContext } from "@/app/servicos/layout";
 
 
 
@@ -194,10 +195,10 @@ const ListaComCheckboxComDetalhes = ({ label, itens, aoAlterarPayload, valoresIn
 
 // Formulário Principal
 const FormsWarmupProjetos = () => {
-    const { userData } = useAuth(); // Obtém os dados do usuário logado
-    const nomeUsuario = userData?.user?.displayName || ""; // Nome do usuário logado
+    const { user } = useAuth();
+    const nomeUsuario = user?.displayName || "";
     const { id } = useParams();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [dadosNegociacao, setDadosNegociacao] = useState({
         observacoes: [],
         capa_projeto: {
@@ -256,11 +257,8 @@ const FormsWarmupProjetos = () => {
             email_envio_faturamento: "",
         },
     });
-    const groupId = "df5919f9-37fd-4725-9aab-8ecc154789a8"; // ID do grupo
-    const channelId = '19:f826e90af9f741319cf021cf04aa19a4@thread.tacv2'
-    const { members } = useGroupMembers(groupId, channelId); // Para o grupo principal
-    const { members: socios } = useGroupMembers('718b8873-3ca9-4bd1-bd3d-6b657fe2cf80'); // Para os sócios
-    const { recursos } = useRecursos();
+    const { members } = useDataContext();
+    const { members: socios } = useGroupMembers('718b8873-3ca9-4bd1-bd3d-6b657fe2cf80');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -313,17 +311,17 @@ const FormsWarmupProjetos = () => {
 
 
 
-    const API_URL = process.env.REACT_APP_API_URL || 'https://sic-conti-backend.vercel.app';
-
     useEffect(() => {
         const fetchCentrosResultados = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/psoffice/centros-resultados`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/psoffice/centrosresultado`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                setCentrosResultados(data); // Atualiza o estado com os centros de resultados
+                setCentrosResultados(data.data || data);
             } catch (err) {
                 console.error("Erro ao carregar centros de resultados:", err.message);
             }
@@ -334,29 +332,28 @@ const FormsWarmupProjetos = () => {
     useEffect(() => {
         const fetchDadosNegociacao = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/warmup/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/warmup/listar/${id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                if (data.status === "success") {
+                if (data.success) {
                     const negociacao = data.data;
 
-                    // Verifica se a etapa é diferente de "Warmup Projetos"
                     if (negociacao.etapa !== "Warmup Projetos") {
                         alert("Formulário já enviado à etapa financeiro, não é possível editar.");
-                        navigate("/projetos/warmup", { replace: true });
+                        router.push("/servicos/warmup");
                         return;
                     }
 
-                    // Atualiza os estados do formulário com os dados recebidos
                     setDadosNegociacao((prev) => ({
                         ...prev,
                         ...negociacao,
                         observacoes: negociacao.observacoes_gerais || [],
                     }));
 
-                    // Atualiza os estados dependentes com base nos dados carregados
                     setcampoProjetoAberto(negociacao?.formacao_preco?.tipo === "Aberto");
                     setcampoLimiteHoras(negociacao?.formacao_preco?.existe_limite_horas === "Sim");
                     setcampoRecorencia(negociacao?.formacao_preco?.recorrente === "Sim");
@@ -366,8 +363,8 @@ const FormsWarmupProjetos = () => {
                     setcampoHorasExtras(negociacao?.formacao_preco?.possui_horas_extras === "Sim");
                     setCampoAprovador(negociacao?.cronograma_execucao?.aprovacao_primeiro_nivel === "Sim");
                     setCampoInformarAtividades(negociacao?.cronograma_execucao?.cronograma_fisico === "Cadastro de Atividades");
+                    setCampoProject(negociacao?.cronograma_execucao?.cronograma_fisico === "Project");
 
-                    // Atualiza profissionais e horas
                     setProfissionaisSelecionados(negociacao?.cronograma_execucao?.selecionados || []);
                     setHorasProfissionais(negociacao?.cronograma_execucao?.horas_alocadas || []);
                 } else {
@@ -397,13 +394,13 @@ const FormsWarmupProjetos = () => {
     };
 
     const handleGerenteSelecionado = (valor) => {
-        const gerente = ListaGerentesProjeto.find((g) => g.nome === valor);
+        const gerente = members?.find((m) => m.displayName === valor);
         if (gerente) {
             setDadosNegociacao((prev) => ({
                 ...prev,
                 capa_projeto: {
                     ...prev.capa_projeto,
-                    gerente_projeto: { nome: gerente.nome, email: gerente.email },
+                    gerente_projeto: { nome: gerente.displayName, email: gerente.email },
                 },
             }));
         }
@@ -431,8 +428,11 @@ const FormsWarmupProjetos = () => {
         novaLista[index].horas = valor;
         setHorasProfissionais(novaLista);
     };
+    const [isSaving, setIsSaving] = useState(false);
+
     const aoSalvar = async (evento) => {
         evento.preventDefault();
+        if (isSaving) return;
 
         const despesasDetalhes = dadosNegociacao?.formacao_preco?.despesas_detalhes || [];
         const totalDespesas = despesasDetalhes.reduce((acc, item) => acc + parseFloat(item.valor || 0), 0);
@@ -522,12 +522,14 @@ const FormsWarmupProjetos = () => {
             }),
         };
 
-        console.log("Payload enviado:", respostas); // Debug
-
+        setIsSaving(true);
         try {
-            const response = await fetch(`${API_URL}/api/warmup/atualizar/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/warmup/atualizar/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
                 body: JSON.stringify(respostas),
             });
 
@@ -535,17 +537,14 @@ const FormsWarmupProjetos = () => {
                 throw new Error(`Erro ao enviar dados: ${response.statusText}`);
             }
 
-            const result = await response.json();
-            if (result.status === "success") {
+            if (response.ok) {
                 alert("Dados enviados com sucesso!");
-                navigate("/projetos/warmup", { replace: true });
-                window.location.reload();
-            }
-            else {
-                throw new Error(result.message || "Erro ao processar os dados.");
+                router.push("/servicos/warmup");
             }
         } catch (err) {
             alert(`Erro: ${err.message}`);
+        } finally {
+            setIsSaving(false);
         }
     };
     const handleRemoverProfissional = (index) => {
@@ -1434,7 +1433,7 @@ const FormsWarmupProjetos = () => {
                                 <ListaSuspensa
                                     label="Quem será o aprovador?"
                                     name="aprovador"
-                                    itens={members.map((member) => ({
+                                    itens={(members || []).map((member) => ({
                                         label: member.displayName,
                                         value: member.displayName,
                                     }))}
@@ -1539,7 +1538,7 @@ const FormsWarmupProjetos = () => {
                                                                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none"
                                                             >
                                                                 <option value="" disabled>Selecione um recurso</option>
-                                                                {recursos.map((recurso) => (
+                                                                {opProfissionaisAlocados.map((recurso) => (
                                                                     <option key={recurso} value={recurso}>
                                                                         {recurso}
                                                                     </option>
@@ -1641,16 +1640,17 @@ const FormsWarmupProjetos = () => {
                 <div className="flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => navigate("/projetos/warmup")}
+                        onClick={() => router.push("/servicos/warmup")}
                         className="px-4 py-2 bg-gray-300 text-gray-800 rounded shadow hover:bg-gray-400 transition duration-200"
                     >
                         Voltar
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition duration-200"
+                        disabled={isSaving}
+                        className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Salvar
+                        {isSaving ? "Salvando..." : "Salvar"}
                     </button>
                 </div>
             </form>

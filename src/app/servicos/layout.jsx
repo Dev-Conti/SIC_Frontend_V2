@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "@/components/Layout/Sidebar";
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import withAuth from "@/hoc/withAuth";
 import { NavbarDefault } from "@/components/Layout/NavbarDefault";
 import {
@@ -20,7 +20,9 @@ import { useRouter } from "next/navigation";
 
 const baseRoute = "/servicos";
 
-function UserLayout({ children }) {
+const DataContext = createContext();
+
+function UserLayout({ children, emails, members }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const toggleSidebar = () => {
@@ -80,22 +82,24 @@ function UserLayout({ children }) {
   ];
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        toggleSidebar={toggleSidebar}
-        className="transition-all duration-300"
-        sections={sections}
-      />
-      {/* Conteúdo Principal */}
-      <div className={`flex flex-col w-full transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"}`}>
-        <NavbarDefault/>
-        <div className="flex-1 p-4">
-          {children}
+    <DataContext.Provider value={{ emails, members }}>
+      <div className="flex h-screen">
+        {/* Sidebar */}
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={toggleSidebar}
+          className="transition-all duration-300"
+          sections={sections}
+        />
+        {/* Conteúdo Principal */}
+        <div className={`flex flex-col w-full transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"}`}>
+          <NavbarDefault/>
+          <div className="flex-1 p-4">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </DataContext.Provider>
   );
 }
 
@@ -115,5 +119,7 @@ const withEmails = (Component) => (props) => {
 
   return <Component {...props} emails={emails} members={members} />;
 };
+
+export const useDataContext = () => useContext(DataContext);
 
 export default withEmails(withAuth(UserLayout));
