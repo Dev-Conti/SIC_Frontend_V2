@@ -10,6 +10,7 @@ import { Tooltip } from "@material-tailwind/react";
 import { useAuth } from "@/context/AuthContext";
 import DropdownText from "@/components/Buttons/DropdownText";
 import SuportModal from "@/components/Modal/SuportModal";
+import modules from "@/data/modules";
 
 const Sidebar = ({ isCollapsed, toggleSidebar, className, sections, baseRoute }) => {
   const [activeMenu, setActiveMenu] = useState("");
@@ -18,12 +19,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, className, sections, baseRoute })
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
 
-  const dropdownOptions = [
-    { label: "Comercial", link: "/comercial" },
-    { label: "Serviços", link: "/servicos" },
-    { label: "Financeiro", link: "/financeiro" },
-    { label: "Admin", link: "/admin" }
-  ];
+  const dropdownOptions = modules;
 
   const getDefaultDropdownOption = () => {
     const currentPath = window.location.pathname;
@@ -105,7 +101,13 @@ const Sidebar = ({ isCollapsed, toggleSidebar, className, sections, baseRoute })
 
       {/* Navegação */}
       <nav className="flex-1 p-3 space-y-6">
-        {sections.map((section, index) => (
+        {sections
+          .map((section) => ({
+            ...section,
+            items: section.items.filter((item) => !item.hidden),
+          }))
+          .filter((section) => section.items.length > 0)
+          .map((section, index) => (
           <div key={index}>
             <p
               className={`text-xs font-medium text-gray-400 uppercase ${isCollapsed ? "hidden" : "whitespace-nowrap"

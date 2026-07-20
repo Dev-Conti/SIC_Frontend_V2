@@ -46,7 +46,7 @@ const TABLE_HEAD = [
   "Valor",
   "Status",
   "Etapa",
-  "Início Warmup",
+  "Última Atualização",
   "Ações",
 ];
 
@@ -58,6 +58,30 @@ const formatDate = (dateString) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
+};
+
+const formatDateHora = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "-";
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${formatDate(dateString)} ${hours}:${minutes}`;
+};
+
+const getStatusHistorico = (item) => {
+  const historico = item?.status_historico;
+  if (Array.isArray(historico) && historico.length > 0) {
+    return [...historico].sort(
+      (a, b) => new Date(b.alterado_em) - new Date(a.alterado_em)
+    );
+  }
+  if (item?.inicio_warmup) {
+    return [
+      { status: item?.status, etapa: item?.etapa, alterado_em: item.inicio_warmup },
+    ];
+  }
+  return [];
 };
 
 const formatCurrency = (rawValue) => {
@@ -99,6 +123,7 @@ const ControleProjetos = () => {
 
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
   const [itemEncerramento, setItemEncerramento] = useState(null);
+  const [itemHistorico, setItemHistorico] = useState(null);
 
   const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
@@ -212,6 +237,9 @@ const ControleProjetos = () => {
 
   const abrirConfirmEncerramento = (item) => setItemEncerramento(item);
   const cancelarConfirmEncerramento = () => setItemEncerramento(null);
+
+  const abrirHistorico = (item) => setItemHistorico(item);
+  const fecharHistorico = () => setItemHistorico(null);
 
   const enviarEmailNotificacaoEncerramento = async (item) => {
     // TODO: implementar via v2 backend
@@ -378,7 +406,7 @@ const ControleProjetos = () => {
                 {TABLE_HEAD.map((head) => (
                   <th
                     key={head}
-                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     {head}
                   </th>
@@ -389,45 +417,47 @@ const ControleProjetos = () => {
               {linhasFiltradas.map((item) => {
                 const statusDisplay = getStatusDisplay(item.status);
                 const podeSolicitarEncerramento = item.etapa === "Projeto Liberado";
+                const statusHistorico = getStatusHistorico(item);
+                const ultimaAtualizacao = statusHistorico[0];
 
                 return (
                   <tr key={item._id}>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <Typography variant="small" className="truncate">
                         {item?.capa_projeto?.gerente_projeto?.nome || "N/A"}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
-                      <Typography variant="small" className="font-bold truncate">
+                    <td className="px-3 py-3 max-w-[9rem]">
+                      <Typography variant="small" className="font-bold truncate" title={item?.capa_projeto?.codigo}>
                         {item?.capa_projeto?.codigo}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <Typography variant="small" className="truncate">
                         {item?.capa_projeto?.centro_resultado?.NOME || "N/A"}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <Typography variant="small" className="truncate">
                         {formatCurrency(item?.formacao_preco?.valor)}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <span className={`font-semibold ${statusDisplay.colorClass}`}>
                         {statusDisplay.label}
                       </span>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <Typography variant="small" className="truncate">
                         {item?.etapa}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap">
                       <Typography variant="small" className="truncate">
-                        {formatDate(item?.inicio_warmup)}
+                        {ultimaAtualizacao ? formatDateHora(ultimaAtualizacao.alterado_em) : "-"}
                       </Typography>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-center">
+                    <td className="px-3 py-3 whitespace-nowrap text-center">
                       <Menu placement="bottom-end">
                         <MenuHandler>
                           <IconButton variant="text" size="sm">
@@ -440,6 +470,12 @@ const ControleProjetos = () => {
                             onClick={() => abrirDetalhes(item)}
                           >
                             Ver Detalhes
+                          </MenuItem>
+                          <MenuItem
+                            className="flex items-center gap-2"
+                            onClick={() => abrirHistorico(item)}
+                          >
+                            Ver Histórico
                           </MenuItem>
                           {podeSolicitarEncerramento && (
                             <MenuItem
@@ -485,6 +521,38 @@ const ControleProjetos = () => {
                 className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {itemHistorico && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-20">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full max-h-[80vh] flex flex-col">
+            <h2 className="text-lg font-semibold mb-4">
+              Histórico de Status — {itemHistorico?.capa_projeto?.codigo}
+            </h2>
+            <ul className="space-y-2 overflow-y-auto mb-6">
+              {getStatusHistorico(itemHistorico).map((entry, idx) => (
+                <li key={idx} className="text-sm border-b border-gray-100 pb-2">
+                  <span className="font-semibold">{entry?.status || "N/A"}</span>
+                  {entry?.etapa && (
+                    <>
+                      {" — "}
+                      <span>{entry.etapa}</span>
+                    </>
+                  )}
+                  <div className="text-xs text-gray-500">{formatDateHora(entry?.alterado_em)}</div>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end">
+              <button
+                onClick={fecharHistorico}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded shadow hover:bg-gray-400 transition"
+              >
+                Fechar
               </button>
             </div>
           </div>

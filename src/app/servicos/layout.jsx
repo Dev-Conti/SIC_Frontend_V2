@@ -56,6 +56,7 @@ function UserLayout({ children, emails, members }) {
         {
           label: "AMS",
           icon: GrUserManager,
+          hidden: true,
           subItems: [
             { label: "Projetos", link: `${baseRoute}/ams/projetos` },
             { label: "Chamados", link: `${baseRoute}/ams/chamados` },
