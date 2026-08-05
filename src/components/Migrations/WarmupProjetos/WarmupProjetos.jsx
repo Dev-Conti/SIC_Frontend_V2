@@ -153,25 +153,16 @@ const WarmupProjetos = () => {
     };
 
     const enviarEmailNotificacaoFinanceiro = async (item) => {
-        const warmupUrl = `${window.location.origin}/forms-warmup-financeiro/${item._id}`;
-
-        const emailBody = `
-            <p>Olá,</p>
-            <p>Há um novo warmup disponível para análise do financeiro.</p>
-            <p>O formulário do Warmup está disponível para acompanhamento no Portal do SIC.</p>
-            <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar o formulário</a></p>
-            <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-        `;
-
         try {
-            const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+            const emailResponse = await fetch(`${API_URL}/notifications/send`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({
-                    sender_email: "warmup@conticonsultoria.com.br",
-                    recipient_email: "junia.mendes@conticonsultoria.com.br",
-                    subject: `Novo Warmup disponível para análise do financeiro`,
-                    body_content: emailBody,
+                    tipo: "warmup_novo_financeiro",
+                    contexto: { item_id: item._id },
                 }),
             });
 
@@ -227,7 +218,6 @@ const WarmupProjetos = () => {
     };
 
     const enviarEmailNotificacaoComercial = async (item) => {
-        const warmupUrl = `${window.location.origin}/comercial/warmup`;
         const comercialEmail = item?.responsaveis?.responsavel_comercial?.email;
 
         if (!comercialEmail) {
@@ -235,24 +225,16 @@ const WarmupProjetos = () => {
             return;
         }
 
-        const emailBody = `
-            <p>Olá,</p>
-            <p>Há um formulário pendente de correção no warmup Comercial.</p>
-            <p>Por favor, verifique os comentários e faça as correções necessárias.</p>
-            <p>O formulário do Warmup está disponível para acompanhamento no Portal do SIC.</p>
-            <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar os formulários</a></p>
-            <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-        `;
-
         try {
-            const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+            const emailResponse = await fetch(`${API_URL}/notifications/send`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({
-                    sender_email: "warmup@conticonsultoria.com.br",
-                    recipient_email: comercialEmail,
-                    subject: `Formulário pendente de correção no Warmup Comercial`,
-                    body_content: emailBody,
+                    tipo: "warmup_correcao_pendente_comercial",
+                    contexto: { responsavel_email: comercialEmail },
                 }),
             });
 
@@ -317,25 +299,23 @@ const WarmupProjetos = () => {
 
     const enviarEmailNotificacaoGerente = async (item, gerente) => {
         console.log("Enviando email para o gerente:", gerente);
-        const warmupUrl = `${window.location.origin}/forms-warmup-projetos/${item._id}`;
-
-        const emailBody = `
-            <p>Olá ${gerente.nome},</p>
-            <p>Você foi atribuído como gerente do projeto <strong>${item.capa_projeto.codigo}</strong> para o cliente <strong>${item.cliente.nome}</strong>.</p>
-            <p>O formulário do Warmup está disponível para preenchimento no Portal do SIC.</p>
-            <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar o formulário</a></p>
-            <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-        `;
 
         try {
-            const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+            const emailResponse = await fetch(`${API_URL}/notifications/send`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({
-                    sender_email: "warmup@conticonsultoria.com.br",
-                    recipient_email: gerente.email,
-                    subject: `Você foi atribuído como Gerente do Projeto ${item.capa_projeto.codigo}`,
-                    body_content: emailBody,
+                    tipo: "warmup_atribuido_gerente",
+                    contexto: {
+                        gerente_nome: gerente.nome,
+                        gerente_email: gerente.email,
+                        cliente_nome: item.cliente.nome,
+                        codigo: item.capa_projeto.codigo,
+                        item_id: item._id,
+                    },
                 }),
             });
 

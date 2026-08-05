@@ -242,24 +242,15 @@ const ControleProjetos = () => {
   const fecharHistorico = () => setItemHistorico(null);
 
   const enviarEmailNotificacaoEncerramento = async (item) => {
-    // TODO: implementar via v2 backend
-    const warmupUrl = `${window.location.origin}/financeiro/projetos`;
-    const emailBody = `
-      <p>Olá,</p>
-      <p>Há uma solicitação de encerramento financeiro para o projeto <strong>${item?.capa_projeto?.codigo}</strong>.</p>
-      <p>O formulário do Warmup está disponível para acompanhamento no Portal do SIC.</p>
-      <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar</a></p>
-      <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-    `;
-
-    const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+    const emailResponse = await fetch(`${API_URL}/notifications/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify({
-        sender_email: "warmup@conticonsultoria.com.br",
-        recipient_email: "junia.mendes@conticonsultoria.com.br",
-        subject: `Solicitação de Encerramento - Projeto ${item?.capa_projeto?.codigo}`,
-        body_content: emailBody,
+        tipo: "projeto_encerramento_solicitado",
+        contexto: { codigo: item?.capa_projeto?.codigo },
       }),
     });
 

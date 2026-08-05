@@ -108,7 +108,6 @@ const WarmupFinanceiro = () => {
     };
 
     const enviarEmailNotificacaoGerente = async (item) => {
-        const warmupUrl = `${window.location.origin}/projetos/warmup`;
         const gerenteEmail = item?.capa_projeto?.gerente_projeto?.email;
 
         if (!gerenteEmail) {
@@ -116,24 +115,16 @@ const WarmupFinanceiro = () => {
             return;
         }
 
-        const emailBody = `
-            <p>Olá,</p>
-            <p>Há um formulário pendente de correção no warmup de serviços.</p>
-            <p>Por favor, verifique os comentários e faça as correções necessárias.</p>
-            <p>O formulário do Warmup está disponível para acompanhamento no Portal do SIC.</p>
-            <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar os formulários</a></p>
-            <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-        `;
-
         try {
-            const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+            const emailResponse = await fetch(`${API_URL}/notifications/send`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({
-                    sender_email: "warmup@conticonsultoria.com.br",
-                    recipient_email: gerenteEmail,
-                    subject: `Formulário pendente de correção no Warmup Financeiro`,
-                    body_content: emailBody,
+                    tipo: "warmup_correcao_pendente_financeiro",
+                    contexto: { gerente_email: gerenteEmail },
                 }),
             });
 
@@ -148,7 +139,6 @@ const WarmupFinanceiro = () => {
     };
 
     const enviarEmailNotificacaoComercial = async (item) => {
-        const warmupUrl = `${window.location.origin}/comercial/warmup`;
         const comercialEmail = item?.responsaveis?.responsavel_comercial?.email;
 
         if (!comercialEmail) {
@@ -156,24 +146,16 @@ const WarmupFinanceiro = () => {
             return;
         }
 
-        const emailBody = `
-            <p>Olá,</p>
-            <p>Há um formulário pendente de correção no Warmup Comercial.</p>
-            <p>Por favor, verifique os comentários e faça as correções necessárias.</p>
-            <p>O formulário do Warmup está disponível para acompanhamento no Portal do SIC.</p>
-            <p>Ou <a href="${warmupUrl}" target="_blank">Clique aqui para acessar os formulários</a></p>
-            <p>Atenciosamente,<br>Equipe ConTI Consultoria</p>
-        `;
-
         try {
-            const emailResponse = await fetch(`${API_URL}/api/enviar-email`, {
+            const emailResponse = await fetch(`${API_URL}/notifications/send`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({
-                    sender_email: "warmup@conticonsultoria.com.br",
-                    recipient_email: comercialEmail,
-                    subject: `Formulário pendente de correção no Warmup Comercial`,
-                    body_content: emailBody,
+                    tipo: "warmup_correcao_pendente_comercial",
+                    contexto: { responsavel_email: comercialEmail },
                 }),
             });
 
