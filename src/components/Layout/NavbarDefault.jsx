@@ -19,7 +19,6 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
-  SquaresPlusIcon,
   SunIcon,
   TagIcon,
   UserGroupIcon,
@@ -94,103 +93,23 @@ function ProfileMenu() {
     </Menu>
   );
 }
-function NavListMenu() {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const renderItems = modules.map(({ label, link }, key) => (
-    <a href={link} key={key}>
-      <MenuItem className="flex items-center gap-3 rounded-lg">
-        <div className="flex items-center justify-center rounded-lg !bg-blue-gray-50 p-2 ">
-          {" "}
-          {React.createElement(SquaresPlusIcon, {
-            strokeWidth: 2,
-            className: "h-6 text-gray-900 w-6",
-          })}
-        </div>
-        <Typography
-          variant="h6"
-          color="blue-gray"
-          className="flex items-center text-sm font-bold"
-        >
-          {label}
-        </Typography>
-      </MenuItem>
-    </a>
-  ));
- 
-  return (
-    <React.Fragment>
-      <Menu
-        open={isMenuOpen}
-        handler={setIsMenuOpen}
-        offset={{ mainAxis: 20 }}
-        placement="bottom"
-        allowHover={true}
-      >
-        <MenuHandler>
-          <Typography as="div" variant="small" className="font-medium">
-            <ListItem
-              className="flex items-center gap-2 py-2 pr-4 font-medium text-gray-900"
-              selected={isMenuOpen || isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen((cur) => !cur)}
-            >
-              Módulos
-              <ChevronDownIcon
-                strokeWidth={2.5}
-                className={`hidden h-3 w-3 transition-transform lg:block ${
-                  isMenuOpen ? "rotate-180" : ""
-                }`}
-              />
-              <ChevronDownIcon
-                strokeWidth={2.5}
-                className={`block h-3 w-3 transition-transform lg:hidden ${
-                  isMobileMenuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </ListItem>
-          </Typography>
-        </MenuHandler>
-        <MenuList className="hidden max-w-screen-xl rounded-xl lg:block">
-          <ul className="grid grid-cols-3 gap-y-2 outline-none outline-0">
-            {renderItems}
-          </ul>
-        </MenuList>
-      </Menu>
-      <div className="block lg:hidden">
-        <Collapse open={isMobileMenuOpen}>
-          <ul className="flex flex-col gap-1">
-            {renderItems}
-          </ul>
-        </Collapse>
-      </div>
-    </React.Fragment>
-  );
-}
- 
 function NavList() {
   return (
     <List className="mt-4 mb-6 p-0 lg:mt-0 lg:mb-0 lg:flex-row lg:p-1">
-      <Typography
-        as="a"
-        href="#"
-        variant="small"
-        color="blue-gray"
-        className="font-medium text-black"
-      >
-        <ListItem className="flex items-center gap-2 py-2 pr-4">Home</ListItem>
-      </Typography>
-      <NavListMenu />
-      <Typography
-        as="a"
-        href="testes"
-        variant="small"
-        color="blue-gray"
-        className="font-medium text-black"
-      >
-        <ListItem className="flex items-center gap-2 py-2 pr-4">
-          Testes
-        </ListItem>
-      </Typography>
+      {modules.map(({ label, link }, key) => (
+        <Typography
+          key={key}
+          as="a"
+          href={link}
+          variant="small"
+          color="blue-gray"
+          className="font-medium text-black"
+        >
+          <ListItem className="flex items-center gap-2 py-2 pr-4">
+            {label}
+          </ListItem>
+        </Typography>
+      ))}
     </List>
   );
 }
