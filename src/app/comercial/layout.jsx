@@ -6,12 +6,10 @@ import withAuth from "@/hoc/withAuth";
 import { NavbarDefault } from "@/components/Layout/NavbarDefault";
 import {
   FiHome,
-  FiSettings,
   FiFileText,
   FiFolder,
   FiBarChart2,
 } from "react-icons/fi";
-import { GrTestDesktop } from "react-icons/gr";
 import useConfigGroups from "@/hooks/useConfigGroups";
 import useMembers from "@/hooks/useMembers";
 import { useRouter } from "next/navigation";
@@ -60,21 +58,6 @@ function UserLayout({ children, emails, members }) {
           label: "Warmup",
           icon: FiFileText,
           link: `${baseRoute}/warmup`,
-        },
-      ],
-    },
-    {
-      label: "Configurações",
-      items: [
-        {
-          label: "Ajustes",
-          icon: FiSettings,
-          link: `#`,
-        },
-        {
-          label: "Testes",
-          icon: GrTestDesktop,
-          link: `${baseRoute}/testes`,
         },
       ],
     },

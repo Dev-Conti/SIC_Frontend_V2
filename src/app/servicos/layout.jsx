@@ -6,13 +6,11 @@ import withAuth from "@/hoc/withAuth";
 import { NavbarDefault } from "@/components/Layout/NavbarDefault";
 import {
   FiHome,
-  FiSettings,
   FiFileText,
   FiFolder,
   FiBarChart2,
 } from "react-icons/fi";
 import { GrProjects } from "react-icons/gr";
-import { GrTestDesktop } from "react-icons/gr";
 import { GrUserManager } from "react-icons/gr";
 import useConfigGroups from "@/hooks/useConfigGroups";
 import useMembers from "@/hooks/useMembers";
@@ -62,21 +60,6 @@ function UserLayout({ children, emails, members }) {
             { label: "Chamados", link: `${baseRoute}/ams/chamados` },
             { label: "Apontamentos", link: `${baseRoute}/ams/apontamentos` },
           ],
-        },
-      ],
-    },
-    {
-      label: "Configurações",
-      items: [
-        {
-          label: "Ajustes",
-          icon: FiSettings,
-          link: `${baseRoute}/ajustes`,
-        },
-        {
-          label: "Testes",
-          icon: GrTestDesktop,
-          link: `${baseRoute}/testes`,
         },
       ],
     },
