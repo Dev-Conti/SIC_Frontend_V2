@@ -520,7 +520,7 @@ const ControleProjetos = () => {
 
       {itemHistorico && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-20">
-          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full max-h-[80vh] flex flex-col">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full max-h-[80vh] flex flex-col">
             <h2 className="text-lg font-semibold mb-4">
               Histórico de Status — {itemHistorico?.capa_projeto?.codigo}
             </h2>
