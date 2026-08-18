@@ -342,7 +342,7 @@ const FormsWarmupComercial = () => {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                setCentrosResultados(data); // Atualiza o estado com os centros de resultados
+                setCentrosResultados(data.data || data); // Atualiza o estado com os centros de resultados
             } catch (err) {
                 console.error("Erro ao carregar centros de resultados:", err.message);
             }
@@ -358,7 +358,7 @@ const FormsWarmupComercial = () => {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                if (data.status === "success") {
+                if (data.success) {
                     const negociacao = data.data;
 
                     // Verifica se a etapa é diferente de "Warmup Comercial"
