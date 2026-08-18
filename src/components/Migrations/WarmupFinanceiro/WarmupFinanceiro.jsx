@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { FaEllipsisH } from 'react-icons/fa';
 import ModalNegociacao from '../ModalDetalhesWarmup/ModalDetalhesWarmup';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../Auth/AuthContext/AuthContext";
+import { useRouter } from 'next/navigation';
+import { useAuth } from "@/context/AuthContext";
 
 const WarmupFinanceiro = () => {
-    const { userData } = useAuth();
+    const { user } = useAuth();
     const [dadosWarmup, setDadosWarmup] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,21 +13,22 @@ const WarmupFinanceiro = () => {
     const [activeMenu, setActiveMenu] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const [showVoltarModal, setShowVoltarModal] = useState(false);
     const [observacaoVoltar, setObservacaoVoltar] = useState("");
     const [currentItemVoltar, setCurrentItemVoltar] = useState(null);
     const [etapaVoltar, setEtapaVoltar] = useState("Comercial");
 
-    const API_URL = process.env.REACT_APP_API_URL || 'https://sic-conti-backend.vercel.app';
+    const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
     async function listarWarmup() {
         try {
-            const response = await fetch(`${API_URL}/api/listar_warmup?etapa=Warmup Financeiro`, {
+            const response = await fetch(`${API_URL}/warmup/listar?etapa=Warmup Financeiro`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
 
@@ -82,10 +83,11 @@ const WarmupFinanceiro = () => {
 
     const confirmarAvancarEtapa = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/warmup/alterar_etapa/${currentItem._id}`, {
-                method: 'PATCH',
+            const response = await fetch(`${API_URL}/warmup/atualizar/${currentItem.negocio_id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
                 body: JSON.stringify({
                     etapa: 'Projeto Liberado',
@@ -177,13 +179,14 @@ const WarmupFinanceiro = () => {
 
     const confirmarVoltarEtapa = async () => {
         try {
-            const usuario = userData?.user?.displayName || "Usuário Anônimo"; // Obtém o nome do usuário
+            const usuario = user?.displayName || "Usuário Anônimo"; // Obtém o nome do usuário
 
             if (etapaVoltar === "Serviços") {
-                const response = await fetch(`${API_URL}/api/warmup/alterar_etapa/${currentItemVoltar._id}`, {
-                    method: 'PATCH',
+                const response = await fetch(`${API_URL}/warmup/atualizar/${currentItemVoltar.negocio_id}`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                     body: JSON.stringify({
                         etapa: "Warmup Projetos", // Usa a etapa selecionada
@@ -202,10 +205,11 @@ const WarmupFinanceiro = () => {
                 alert('Etapa atualizada com sucesso!');
                 await enviarEmailNotificacaoGerente(currentItemVoltar); // Envia email após a confirmação
             } else if (etapaVoltar === "Comercial") {
-                const response = await fetch(`${API_URL}/api/warmup/alterar_etapa/${currentItemVoltar._id}`, {
-                    method: 'PATCH',
+                const response = await fetch(`${API_URL}/warmup/atualizar/${currentItemVoltar.negocio_id}`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                     body: JSON.stringify({
                         etapa: "Warmup Comercial", // Usa a etapa selecionada
@@ -236,7 +240,7 @@ const WarmupFinanceiro = () => {
     };
 
     const redirecionarFormulario = (id) => {
-        navigate(`/forms-warmup-financeiro/${id}`);
+        router.push(`/financeiro/forms-warmup-financeiro/${id}`);
         setActiveMenu(null);
     };
 
@@ -327,6 +331,12 @@ const WarmupFinanceiro = () => {
                                                     className="text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center"
                                                 >
                                                     Ver Detalhes
+                                                </button>
+                                                <button
+                                                    onClick={() => redirecionarFormulario(item.negocio_id)}
+                                                    className="text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center"
+                                                >
+                                                    Abrir Formulário
                                                 </button>
                                                 <button
                                                     onClick={() => handleAvancarEtapa(item)}

@@ -1,9 +1,8 @@
 import React from "react";
-import { useAuth } from "../Auth/AuthContext/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { NumericFormat } from 'react-number-format';
-import ListaGerentesProjeto from "./Dados/ListaGerentesProjeto";
 import ObservacoesChat from "./Componentes/ObservacoesChat"
 import ListaSuspensa from "./inputs/ListaSuspensa";
 import CampoTexto from "./inputs/CampoTexto";
@@ -107,10 +106,10 @@ const ListaComCheckbox = ({ label, itens, aoAlterarPayload, valoresIniciais = []
 
 // Formulário Principal
 const FormsWarmupFinanceiro = () => {
-    const { userData } = useAuth(); // Obtém os dados do usuário logado
-    const nomeUsuario = userData?.user?.displayName || ""; // Nome do usuário logado
+    const { user } = useAuth(); // Obtém os dados do usuário logado
+    const nomeUsuario = user?.displayName || ""; // Nome do usuário logado
     const { id } = useParams();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [dadosNegociacao, setDadosNegociacao] = useState({
         observacoes: [],
         capa_projeto: {
@@ -224,17 +223,19 @@ const FormsWarmupFinanceiro = () => {
 
 
 
-    const API_URL = process.env.REACT_APP_API_URL || 'https://sic-conti-backend.vercel.app';
+    const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
     useEffect(() => {
         const fetchCentrosResultados = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/psoffice/centros-resultados`);
+                const response = await fetch(`${API_URL}/psoffice/centrosresultado`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                setCentrosResultados(data); // Atualiza o estado com os centros de resultados
+                setCentrosResultados(data.data || data); // Atualiza o estado com os centros de resultados
             } catch (err) {
                 console.error("Erro ao carregar centros de resultados:", err.message);
             }
@@ -245,12 +246,14 @@ const FormsWarmupFinanceiro = () => {
     useEffect(() => {
         const fetchDadosNegociacao = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/warmup/${id}`);
+                const response = await fetch(`${API_URL}/warmup/listar/${id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
                 const data = await response.json();
-                if (data.status === "success") {
+                if (data.success) {
                     const negociacao = data.data;
     
                     // Atualiza os estados do formulário com os dados recebidos
@@ -287,16 +290,13 @@ const FormsWarmupFinanceiro = () => {
         fetchDadosNegociacao();
     }, [id]);
     const handleGerenteSelecionado = (valor) => {
-        const gerente = ListaGerentesProjeto.find((g) => g.nome === valor);
-        if (gerente) {
-            setDadosNegociacao((prev) => ({
-                ...prev,
-                capa_projeto: {
-                    ...prev.capa_projeto,
-                    gerente_projeto: { nome: gerente.nome, email: gerente.email },
-                },
-            }));
-        }
+        setDadosNegociacao((prev) => ({
+            ...prev,
+            capa_projeto: {
+                ...prev.capa_projeto,
+                gerente_projeto: { ...prev.capa_projeto?.gerente_projeto, nome: valor },
+            },
+        }));
     };
     const handleAdicionarProfissional = (profissional) => {
         if (!profissionaisSelecionados.includes(profissional)) {
@@ -392,25 +392,21 @@ const FormsWarmupFinanceiro = () => {
         console.log("Payload enviado:", respostas); // Debug
     
         try {
-            const response = await fetch(`${API_URL}/api/warmup/atualizar/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+            const response = await fetch(`${API_URL}/warmup/atualizar/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
                 body: JSON.stringify(respostas),
             });
-    
+
             if (!response.ok) {
                 throw new Error(`Erro ao enviar dados: ${response.statusText}`);
             }
 
-            const result = await response.json();
-            if (result.status === "success") {
-                alert("Dados enviados com sucesso!");
-                navigate("/financeiro/warmup", { replace: true });
-                window.location.reload();
-            }
-            else {
-                throw new Error(result.message || "Erro ao processar os dados.");
-            }
+            alert("Dados enviados com sucesso!");
+            router.push("/financeiro/warmup");
         } catch (err) {
             alert(`Erro: ${err.message}`);
         }
@@ -508,10 +504,14 @@ const FormsWarmupFinanceiro = () => {
                             <ListaSuspensa
                                 label="Gerente do Projeto"
                                 name="gerente_projeto"
-                                itens={ListaGerentesProjeto.map((gerente) => ({
-                                    label: gerente.nome,
-                                    value: gerente.nome,
-                                }))}
+                                itens={
+                                    dadosNegociacao?.capa_projeto?.gerente_projeto?.nome
+                                        ? [{
+                                            label: dadosNegociacao.capa_projeto.gerente_projeto.nome,
+                                            value: dadosNegociacao.capa_projeto.gerente_projeto.nome,
+                                        }]
+                                        : []
+                                }
                                 obrigatorio
                                 valor={dadosNegociacao?.capa_projeto?.gerente_projeto?.nome || ""}
                                 aoAlterado={handleGerenteSelecionado}
@@ -1365,7 +1365,7 @@ const FormsWarmupFinanceiro = () => {
                 <div className="flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => navigate("/financeiro/warmup")}
+                        onClick={() => router.push("/financeiro/warmup")}
                         className="px-4 py-2 bg-gray-300 text-gray-800 rounded shadow hover:bg-gray-400 transition duration-200"
                     >
                         Voltar
