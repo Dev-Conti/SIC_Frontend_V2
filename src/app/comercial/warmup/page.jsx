@@ -1,11 +1,11 @@
 "use client";
 
-import WarmupComercialTable from "@/components/Tabelas/WarmupComercialTable";
+import WarmupComercial from "@/components/Migrations/WarmupComercial/WarmupComercial";
 
 export default function Home() {
   return (
     <div className="flex justify-center m-2">
-      <WarmupComercialTable/>
+      <WarmupComercial/>
     </div>
   );
 }
