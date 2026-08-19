@@ -76,7 +76,7 @@ function UserLayout({ children, emails, members }) {
         {/* Conteúdo Principal */}
         <div className={`flex flex-col w-full transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"}`}>
           <NavbarDefault/>
-          <div className="flex-1 px-4">
+          <div className="flex-1 min-h-0 px-4">
             {children}
           </div>
         </div>

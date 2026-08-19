@@ -348,11 +348,11 @@ const WarmupProjetos = () => {
     }
 
     return (
-        <div className="flex flex-col p-4 min-h-screen w-full px-10">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Processos de Warm-up</h1>
+        <div className="flex flex-col h-full overflow-hidden p-4 w-full px-10">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 shrink-0">Processos de Warm-up</h1>
 
             {/* Filtro por gerente do projeto */}
-            <div className="mb-4">
+            <div className="mb-4 shrink-0">
                 <label className="inline-flex items-center">
                     <input
                         type="checkbox"
@@ -371,9 +371,9 @@ const WarmupProjetos = () => {
             )}
 
             {!loading && !error && filteredData.length > 0 && (
-                <div className="max-w bg-white rounded-lg shadow-md">
+                <div className="max-w bg-white rounded-lg shadow-md flex-1 min-h-0 overflow-y-auto">
                     <table className="table-auto w-full text-sm text-left border-collapse">
-                        <thead className="bg-gray-200">
+                        <thead className="bg-gray-200 sticky top-0 z-10">
                             <tr>
                                 <th className="px-2 py-1 font-semibold text-gray-600">Sócio Responsável</th>
                                 <th className="px-2 py-1 font-semibold text-gray-600">Gerente do Projeto</th>

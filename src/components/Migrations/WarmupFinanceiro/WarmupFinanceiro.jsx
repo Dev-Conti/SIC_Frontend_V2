@@ -263,8 +263,8 @@ const WarmupFinanceiro = () => {
     }
 
     return (
-        <div className="flex flex-col p-4 min-h-screen w-full px-10">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Processos de Warm-up</h1>
+        <div className="flex flex-col h-full overflow-hidden p-4 w-full px-10">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 shrink-0">Processos de Warm-up</h1>
 
             {loading && <p className="text-sm font-medium text-gray-600">Carregando...</p>}
             {error && <p className="text-sm font-medium text-red-500">Erro: {error}</p>}
@@ -273,9 +273,9 @@ const WarmupFinanceiro = () => {
             )}
 
             {!loading && !error && dadosWarmup.length > 0 && (
-                <div className="max-w bg-white rounded-lg shadow-md">
+                <div className="max-w bg-white rounded-lg shadow-md flex-1 min-h-0 overflow-y-auto">
                     <table className="table-auto w-full text-sm text-left border-collapse">
-                        <thead className="bg-gray-200">
+                        <thead className="bg-gray-200 sticky top-0 z-10">
                             <tr>
                                 <th className="px-2 py-1 font-semibold text-gray-600">Gerente do Projeto</th>
                                 <th className="px-2 py-1 font-semibold text-gray-600">Código do Projeto</th>

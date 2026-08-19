@@ -4,7 +4,7 @@ import WarmupProjetos from "@/components/Migrations/WarmupProjetos/WarmupProjeto
 
 export default function Page() {
   return (
-    <div className="flex flex-col p-4 min-h-screen w-full px-10">
+    <div className="h-full">
       <WarmupProjetos />
     </div>
   );

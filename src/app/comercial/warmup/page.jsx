@@ -4,7 +4,7 @@ import WarmupComercial from "@/components/Migrations/WarmupComercial/WarmupComer
 
 export default function Home() {
   return (
-    <div className="flex justify-center m-2">
+    <div className="h-full">
       <WarmupComercial/>
     </div>
   );
