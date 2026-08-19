@@ -1,9 +1,8 @@
 import React from "react";
-import { useAuth } from "../Auth/AuthContext/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { NumericFormat } from 'react-number-format';
-import ListaGerentesProjeto from "./Dados/ListaGerentesProjeto";
 import ObservacoesChat from "./Componentes/ObservacoesChat"
 import ListaSuspensa from "./inputs/ListaSuspensa";
 import CampoTexto from "./inputs/CampoTexto";
@@ -188,10 +187,10 @@ const ListaComCheckboxComDetalhes = ({ label, itens, aoAlterarPayload, valoresIn
 
 // Formulário Principal
 const FormsWarmupComercial = () => {
-    const { userData } = useAuth(); // Obtém os dados do usuário logado
-    const nomeUsuario = userData?.user?.displayName || ""; // Nome do usuário logado
+    const { user } = useAuth(); // Obtém os dados do usuário logado
+    const nomeUsuario = user?.displayName || ""; // Nome do usuário logado
     const { id } = useParams();
-    const navigate = useNavigate();
+    const router = useRouter();
     const groupId = "df5919f9-37fd-4725-9aab-8ecc154789a8"; // ID do grupo
     const channelId = '19:f826e90af9f741319cf021cf04aa19a4@thread.tacv2'
     const { members } = useGroupMembers(groupId, channelId); // Para o grupo principal
@@ -332,12 +331,14 @@ const FormsWarmupComercial = () => {
     const [valorProjeto, setValorProjeto] = useState(""); // Valor bruto
     const [valorParceiro, setvalorParceiro] = useState(""); // Valor bruto
 
-    const API_URL = process.env.REACT_APP_API_URL || 'https://sic-conti-backend.vercel.app';
+    const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
     useEffect(() => {
         const fetchCentrosResultados = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/psoffice/centros-resultados`);
+                const response = await fetch(`${API_URL}/psoffice/centrosresultado`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
@@ -353,7 +354,9 @@ const FormsWarmupComercial = () => {
     useEffect(() => {
         const fetchDadosNegociacao = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/warmup/${id}`);
+                const response = await fetch(`${API_URL}/warmup/listar/${id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!response.ok) {
                     throw new Error(`Erro na API: ${response.status}`);
                 }
@@ -364,7 +367,7 @@ const FormsWarmupComercial = () => {
                     // Verifica se a etapa é diferente de "Warmup Comercial"
                     if (negociacao.etapa !== "Warmup Comercial") {
                         alert("Formulário já enviado à etapa financeiro, não é possível editar.");
-                        navigate("/projetos/warmup", { replace: true });
+                        router.push("/comercial/warmup");
                         return;
                     }
 
@@ -547,9 +550,12 @@ const FormsWarmupComercial = () => {
         console.log("Payload enviado:", respostas); // Debug
 
         try {
-            const response = await fetch(`${API_URL}/api/warmup/atualizar/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+            const response = await fetch(`${API_URL}/warmup/atualizar/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
                 body: JSON.stringify(respostas),
             });
 
@@ -557,15 +563,8 @@ const FormsWarmupComercial = () => {
                 throw new Error(`Erro ao enviar dados: ${response.statusText}`);
             }
 
-            const result = await response.json();
-            if (result.status === "success") {
-                alert("Dados enviados com sucesso!");
-                navigate("/comercial/warmup", { replace: true });
-                window.location.reload();
-            }
-            else {
-                throw new Error(result.message || "Erro ao processar os dados.");
-            }
+            alert("Dados enviados com sucesso!");
+            router.push("/comercial/warmup");
         } catch (err) {
             alert(`Erro: ${err.message}`);
         }
@@ -1452,7 +1451,7 @@ const FormsWarmupComercial = () => {
                 <div className="flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => navigate("/comercial/warmup")}
+                        onClick={() => router.push("/comercial/warmup")}
                         className="px-4 py-2 bg-gray-300 text-gray-800 rounded shadow hover:bg-gray-400 transition duration-200"
                     >
                         Voltar

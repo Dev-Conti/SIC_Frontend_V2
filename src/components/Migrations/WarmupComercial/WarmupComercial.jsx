@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { FaEllipsisH } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import ModalDetalhesWarmup from "../ModalDetalhesWarmup/ModalDetalhesWarmup";
-import { useAuth } from "../Auth/AuthContext/AuthContext";
-import { format, isWeekend, eachDayOfInterval } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
 
 const WarmupComercial = () => {
-    const { userData, isLoadingUserData } = useAuth();
-    const USER_EMAIL = userData?.user?.email; // Obtém o email do usuário logado
-    const USER_NAME = userData?.user?.displayName; // Obtém o nome do usuário logado
+    const { user } = useAuth();
+    const USER_EMAIL = user?.email; // Obtém o email do usuário logado
+    const USER_NAME = user?.displayName; // Obtém o nome do usuário logado
     const [dadosWarmup, setDadosWarmup] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,7 +17,7 @@ const WarmupComercial = () => {
     const [showLoadingModal, setShowLoadingModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const [projetoFilter, setProjetoFilter] = useState("");
     const [reponsavelFilter, setreponsavelFilter] = useState("");
@@ -27,17 +26,16 @@ const WarmupComercial = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [filtroResponsavel, setFiltroResponsavel] = useState(true); // Estado do checkbox
 
-    const API_URL = process.env.REACT_APP_API_URL;
-    const BASE_URL = process.env.REACT_APP_FRONT_URL;
-
-    const isResponsavel = (item) =>
-        item?.responsaveis?.responsavel_comercial?.nome === USER_NAME || USER_NAME === "TI";
+    const API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
     async function listarWarmup() {
         try {
-            const response = await fetch(`${API_URL}/api/listar_warmup?etapa=Warmup Comercial`, {
+            const response = await fetch(`${API_URL}/warmup/listar?etapa=Warmup Comercial`, {
                 method: "GET",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
             });
 
             if (!response.ok) {
@@ -68,20 +66,20 @@ const WarmupComercial = () => {
     };
 
     const calcularDiasUteis = (inicio) => {
-        console.log("Início do cálculo de dias úteis:", inicio);
         const startDate = new Date(inicio);
         const endDate = new Date();
-        console.log("Data de início:", startDate);
-        console.log("Data de fim:", endDate);
-        const allDays = eachDayOfInterval({ start: startDate, end: endDate });
-        console.log("Todos os dias no intervalo:", allDays);
-        const businessDays = allDays.filter(day => !isWeekend(day));
-        console.log("Dias úteis no intervalo:", businessDays);
-        return businessDays.length;
+        let businessDays = 0;
+        for (const day = new Date(startDate); day <= endDate; day.setDate(day.getDate() + 1)) {
+            const weekday = day.getDay();
+            if (weekday !== 0 && weekday !== 6) {
+                businessDays += 1;
+            }
+        }
+        return businessDays;
     };
 
     const redirecionarFormulario = (id) => {
-        navigate(`/forms-warmup-comercial/${id}`);
+        router.push(`/comercial/forms-warmup-comercial/${id}`);
         setActiveMenu(null);
     };
 
@@ -96,7 +94,7 @@ const WarmupComercial = () => {
         setShowLoadingModal(true);
 
         try {
-            const url = `${API_URL}/api/warmup/alterar_etapa/${currentItem._id}`;
+            const url = `${API_URL}/warmup/atualizar/${currentItem.negocio_id}`;
             let payload;
 
             // Verifica se existe um gerente de projeto atribuído
@@ -114,8 +112,11 @@ const WarmupComercial = () => {
             }
 
             const response = await fetch(url, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -343,16 +344,14 @@ const WarmupComercial = () => {
                                                     Ver Detalhes
                                                 </button>
                                                 <button
-                                                    onClick={() => redirecionarFormulario(item._id)}
-                                                    className={`text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center ${!isResponsavel(item) ? "opacity-50 cursor-not-allowed" : ""}`}
-                                                    disabled={!isResponsavel(item)}
+                                                    onClick={() => redirecionarFormulario(item.negocio_id)}
+                                                    className="text-gray-700 px-4 py-2 hover:bg-gray-100 w-full text-center"
                                                 >
                                                     Abrir Formulário
                                                 </button>
                                                 <button
                                                     onClick={() => handleAvancarEtapa(item)}
-                                                    className={`text-sky-700 px-4 py-2 hover:bg-sky-100 w-full text-center ${!isResponsavel(item) ? "opacity-50 cursor-not-allowed" : ""}`}
-                                                    disabled={!isResponsavel(item)}
+                                                    className="text-sky-700 px-4 py-2 hover:bg-sky-100 w-full text-center"
                                                 >
                                                     Avançar Etapa
                                                 </button>
